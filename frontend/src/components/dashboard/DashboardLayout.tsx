@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, ReactNode } from 'react';
+import { useEffect, useState, ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import clsx from 'clsx';
 import Sidebar from './Sidebar';
@@ -19,6 +19,18 @@ export default function DashboardLayout({ children, pageTitle, requiredRole }: D
   const { user, loading, logout } = useAuth();
   const router = useRouter();
 
+  useEffect(() => {
+    if (loading) {
+      return;
+    }
+
+    if (!user) {
+      router.replace('/login');
+    } else if (user.role !== requiredRole) {
+      router.replace(`/${user.role.toLowerCase()}`);
+    }
+  }, [loading, requiredRole, router, user]);
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -28,12 +40,10 @@ export default function DashboardLayout({ children, pageTitle, requiredRole }: D
   }
 
   if (!user) {
-    router.push('/login');
     return null;
   }
 
   if (user.role !== requiredRole) {
-    router.push(`/${user.role.toLowerCase()}`);
     return null;
   }
 
